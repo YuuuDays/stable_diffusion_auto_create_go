@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"sd-auto-new/config"
 )
@@ -18,8 +19,69 @@ type SDResponse struct {
 	Images []string `json:"images"`
 }
 
+type SDOptions struct {
+	SDModelCheckpoint string `json:"sd_model_checkpoint"`
+}
+
+// getCurrentModel はSD WebUIの現在のモデルを取得
+func getCurrentModel(apiURL string) (string, error) {
+	resp, err := http.Get(apiURL + "/sdapi/v1/options")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var options SDOptions
+	if err := json.NewDecoder(resp.Body).Decode(&options); err != nil {
+		return "", err
+	}
+
+	return options.SDModelCheckpoint, nil
+}
+
+// GetLastUsedLora は最後に使用したLoRAを取得
+func GetLastUsedLora() (string, error) {
+	data, err := os.ReadFile("config/.last_lora")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(data)), nil
+}
+
+// SaveLastUsedLora は最後に使用したLoRAを保存
+func SaveLastUsedLora(lora string) error {
+	return os.WriteFile("config/.last_lora", []byte(lora), 0644)
+}
+
+// GetEffectiveLora は有効なLoRAを取得（設定または最後に使用したもの）
+func GetEffectiveLora(cfg *config.SDConfig) (string, error) {
+	lora := cfg.Lora
+	if lora == "" {
+		lastLora, err := GetLastUsedLora()
+		if err == nil && lastLora != "" {
+			lora = lastLora
+			fmt.Printf("🔗 使用LoRA: %s\n", lora)
+		}
+	} else {
+		// LoRAが指定された場合、保存
+		SaveLastUsedLora(lora)
+	}
+	return lora, nil
+}
+
 // GenerateImage は指定されたプロンプトで画像を生成し、指定ディレクトリに保存
 func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, outputDir, fileName string) error {
+	// モデル取得（設定されていない場合、現在のモデルを使用）
+	model := cfg.Model
+	if model == "" {
+		currentModel, err := getCurrentModel(cfg.APIURL)
+		if err != nil {
+			return fmt.Errorf("現在のモデル取得エラー: %v", err)
+		}
+		model = currentModel
+		fmt.Printf("📋 使用モデル: %s\n", model)
+	}
+
 	// ペイロード作成
 	payload := map[string]interface{}{
 		"prompt":          prompt,
@@ -31,6 +93,9 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 		"sampler_name":    cfg.SamplerName,
 		"seed":            cfg.Seed,
 	}
+
+	// モデル指定
+	payload["model"] = model
 
 	// 追加パラメータ（値がある場合のみ）
 	if len(cfg.Styles) > 0 {

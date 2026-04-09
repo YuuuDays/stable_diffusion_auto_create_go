@@ -1,0 +1,3 @@
+# ネガティブプロンプト設定
+# このファイルにネガティブプロンプトを記述してください
+score_6, score_5, score_4, source_anime, source_cartoon, watermark, text, signature, blurry, lowres, bad anatomy, bad hands, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, artist name

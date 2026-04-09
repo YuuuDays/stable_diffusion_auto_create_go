@@ -11,6 +11,8 @@ import (
 // SDConfig はSD生成パラメータを管理
 type SDConfig struct {
 	APIURL                            string
+	Model                             string
+	Lora                              string
 	NegativePrompt                    string
 	Steps                             int
 	CfgScale                          float64
@@ -67,9 +69,17 @@ func LoadSDConfig() (*SDConfig, error) {
 		return nil, err
 	}
 
+	// ネガティブプロンプトを別ファイルから読み込み
+	negativePrompt, err := loadNegativePromptFromFile()
+	if err != nil {
+		return nil, err
+	}
+
 	cfg := &SDConfig{
 		APIURL:                            sdConfig["API_URL"],
-		NegativePrompt:                    sdConfig["NEGATIVE_PROMPT"],
+		Model:                             sdConfig["MODEL"],
+		Lora:                              sdConfig["LORA"],
+		NegativePrompt:                    negativePrompt,
 		Steps:                             parseInt(sdConfig["STEPS"], 20),
 		CfgScale:                          parseFloat(sdConfig["CFG_SCALE"], 7.0),
 		Width:                             parseInt(sdConfig["WIDTH"], 768),
@@ -124,6 +134,12 @@ func LoadSDConfig() (*SDConfig, error) {
 func SaveSDConfig(cfg *SDConfig) error {
 	var lines []string
 
+	if cfg.Model != "" {
+		lines = append(lines, fmt.Sprintf("MODEL=%s", cfg.Model))
+	}
+	if cfg.Lora != "" {
+		lines = append(lines, fmt.Sprintf("LORA=%s", cfg.Lora))
+	}
 	if cfg.NegativePrompt != "" {
 		lines = append(lines, fmt.Sprintf("NEGATIVE_PROMPT=%s", cfg.NegativePrompt))
 	}
@@ -172,6 +188,25 @@ func loadSDConfigFromFile() (map[string]string, error) {
 		}
 	}
 	return config, nil
+}
+
+// loadNegativePromptFromFile はネガティブプロンプトファイルを読み込み、文字列として返す
+func loadNegativePromptFromFile() (string, error) {
+	data, err := os.ReadFile("config/ネガティブプロンプト置き場.txt")
+	if err != nil {
+		return "", err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	var promptLines []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		promptLines = append(promptLines, line)
+	}
+	return strings.Join(promptLines, ", "), nil
 }
 
 func parseInt(s string, defaultValue int) int {

@@ -1,6 +1,9 @@
 # API URL
 API_URL=http://127.0.0.1:7860
-# ネガティブプロンプト
+# モデル名 (空でデフォルト)
+MODEL=
+# LoRA (例: <lora:name:1.0>)
+LORA=
 NEGATIVE_PROMPT=score_6, score_5, score_4, source_anime, source_cartoon, watermark, text, signature, blurry, lowres, bad anatomy, bad hands, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, artist name
 # 生成ステップ数 (1-150)
 STEPS=20

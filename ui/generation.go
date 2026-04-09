@@ -58,6 +58,18 @@ func runGeneration(ctx context.Context, char *common.PromptItem, category *situa
 				// プロンプト生成（キャラクター + シチュエーション）
 				prompt := char.En + ", " + sit.Prompts[0].En // 簡易的に最初のプロンプトを使用
 
+				// LoRA追加（設定されている場合）
+				lora, loraErr := stablediffusion.GetEffectiveLora(cfg)
+				if loraErr != nil {
+					fmt.Printf("⚠️ LoRA取得エラー: %v\n", loraErr)
+				}
+				if lora != "" {
+					prompt = lora + ", " + prompt
+				}
+				if lora != "" {
+					prompt = lora + ", " + prompt
+				}
+
 				// ファイル名生成
 				fileName := fmt.Sprintf("%s_%s_%03d.png", char.Ja, sit.Name, currentImage)
 
