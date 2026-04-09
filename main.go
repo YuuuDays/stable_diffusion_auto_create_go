@@ -18,16 +18,25 @@ import (
 // SD API接続確認
 func checkSDConnection(cfg *config.SDConfig) error {
 	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Get(cfg.APIURL + "/sdapi/v1/sd-models")
-	if err != nil {
-		return fmt.Errorf("SD WebUI APIに接続できません。SD WebUIをAPIモードで起動してください: %v", err)
+	urls := []string{
+		cfg.APIURL + "/sdapi/v1/options",
+		cfg.APIURL + "/sdapi/v1/sd-models",
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("SD APIが正常に応答しません (ステータス: %d)", resp.StatusCode)
+	var lastErr error
+	for _, url := range urls {
+		resp, err := client.Get(url)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		resp.Body.Close()
+		if resp.StatusCode == 200 {
+			fmt.Println("✅ SD WebUI APIに接続できました")
+			return nil
+		}
+		lastErr = fmt.Errorf("ステータス: %d", resp.StatusCode)
 	}
-	fmt.Println("✅ SD WebUI APIに接続できました")
-	return nil
+	return fmt.Errorf("SD WebUI APIが正常に応答しません。API URL と SD WebUI の起動モードを確認してください: %v", lastErr)
 }
 
 func main() {

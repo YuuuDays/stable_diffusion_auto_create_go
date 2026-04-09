@@ -39,12 +39,17 @@ func runGeneration(ctx context.Context, char *common.PromptItem, category *situa
 	}
 
 	// 使用LoRA取得と表示
-	lora, err := stablediffusion.GetEffectiveLora(cfg)
+	currentLora, err := stablediffusion.GetEffectiveLora(cfg)
 	if err != nil {
 		fmt.Printf("⚠️ LoRA取得エラー: %v\n", err)
 	}
-	if lora != "" {
-		fmt.Printf("🔗 使用LoRA: %s\n", lora)
+	if currentLora != "" {
+		fmt.Printf("🔗 使用LoRA: %s\n", currentLora)
+	}
+
+	// Hires.fix表示
+	if cfg.EnableHiresFix {
+		fmt.Println("✨ Hires.fix が有効です")
 	}
 
 	// 総生成数を計算
@@ -82,26 +87,24 @@ func runGeneration(ctx context.Context, char *common.PromptItem, category *situa
 				prompt := char.En + ", " + sit.Prompts[0].En // 簡易的に最初のプロンプトを使用
 
 				// LoRA追加（設定されている場合）
-				lora, loraErr := stablediffusion.GetEffectiveLora(cfg)
-				if loraErr != nil {
-					fmt.Printf("⚠️ LoRA取得エラー: %v\n", loraErr)
-				}
-				if lora != "" {
-					prompt = lora + ", " + prompt
-				}
-				if lora != "" {
-					prompt = lora + ", " + prompt
+				if currentLora != "" {
+					prompt = currentLora + ", " + prompt
 				}
 
-				// ファイル名生成
-				fileName := fmt.Sprintf("%s_%s_%03d.png", char.Ja, sit.Name, currentImage)
+				seed := settings.SituationSeeds[sit.FileName]
+				if seed == 0 || seed == -1 {
+					seed = cfg.Seed
+				}
+
+				baseName := fmt.Sprintf("%s_%s_%03d", char.Ja, sit.Name, currentImage)
 
 				// 生成実行
-				err := stablediffusion.GenerateImage(ctx, prompt, cfg, outputDir, fileName)
+				actualSeed, err := stablediffusion.GenerateImage(ctx, prompt, cfg, outputDir, baseName, seed)
 				if err != nil {
 					fmt.Printf("❌ 生成エラー: %v\n", err)
 					continue
 				}
+				fmt.Printf("✅ seed=%d で保存しました\n", actualSeed)
 			}
 		}
 	}

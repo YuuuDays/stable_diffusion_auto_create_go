@@ -9,8 +9,9 @@ import (
 
 // GenerationSettings は生成設定を表す
 type GenerationSettings struct {
-	SituationRepeats map[string]int // シチュエーションごとの繰り返し回数
-	CategoryRepeats  int            // カテゴリ全体の繰り返し回数
+	SituationRepeats map[string]int   // シチュエーションごとの繰り返し回数
+	SituationSeeds   map[string]int64 // シチュエーションごとのシード値
+	CategoryRepeats  int              // カテゴリ全体の繰り返し回数
 }
 
 // selectCharacter はキャラクターを選択
@@ -71,13 +72,25 @@ func selectSituationAndSettings(categories []situation.SituationCategory) (*situ
 	selectedCategory := &categories[catIdx]
 	fmt.Printf("✅ 選択: %s\n", selectedCategory.Name)
 
-	// 各シチュエーションの繰り返し回数を入力
+	// 各シチュエーションのシードと繰り返し回数を入力
 	settings := &GenerationSettings{
 		SituationRepeats: make(map[string]int),
+		SituationSeeds:   make(map[string]int64),
 	}
 
-	fmt.Println("\n各シチュエーションの繰り返し回数を設定:")
+	fmt.Println("\n各シチュエーションのシード指定と繰り返し回数を設定:")
 	for _, sit := range selectedCategory.Situations {
+		seed := int64(-1)
+		fmt.Printf("  %s のシード指定を行いますか？ (1=はい 0=いいえ) >> ", sit.Name)
+		if ReadInt() == 1 {
+			fmt.Printf("  %s のシード値 >> ", sit.Name)
+			seedInput := ReadInt()
+			if seedInput >= 0 {
+				seed = int64(seedInput)
+			}
+		}
+		settings.SituationSeeds[sit.FileName] = seed
+
 		fmt.Printf("  %s の回数 >> ", sit.Name)
 		count := ReadInt()
 		if count < 1 {
@@ -106,13 +119,24 @@ func confirmGeneration(char *common.PromptItem, category *situation.SituationCat
 	totalImages := 0
 	for _, sit := range category.Situations {
 		repeats := settings.SituationRepeats[sit.FileName]
+		seed := settings.SituationSeeds[sit.FileName]
 		images := repeats * settings.CategoryRepeats
 		totalImages += images
-		fmt.Printf("  %s: %d枚\n", sit.Name, images)
+		if seed >= 0 {
+			fmt.Printf("  %s: %d枚 (seed=%d)\n", sit.Name, images, seed)
+		} else {
+			fmt.Printf("  %s: %d枚\n", sit.Name, images)
+		}
 	}
 	fmt.Printf("合計生成枚数: %d枚\n", totalImages)
 
-	fmt.Print("\nこの条件で生成しますか？ (y/n) >> ")
+	fmt.Print("\nこの条件で生成しますか？ (1=はい 0=いいえ) >> ")
 	answer := ReadString()
-	return answer == "y" || answer == "Y"
+	if answer == "1" {
+		fmt.Println("✅ 生成を実行します")
+		return true
+	} else {
+		fmt.Println("❌ 生成をキャンセルしました")
+		return false
+	}
 }

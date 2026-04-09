@@ -13,6 +13,12 @@ type SDConfig struct {
 	APIURL                            string
 	Model                             string
 	Lora                              string
+	EnableHiresFix                    bool
+	HrScale                           float64
+	HrUpscaler                        string
+	HrResizeX                         int
+	HrResizeY                         int
+	HrSecondPassSteps                 int
 	NegativePrompt                    string
 	Steps                             int
 	CfgScale                          float64
@@ -79,6 +85,12 @@ func LoadSDConfig() (*SDConfig, error) {
 		APIURL:                            sdConfig["API_URL"],
 		Model:                             sdConfig["MODEL"],
 		Lora:                              sdConfig["LORA"],
+		EnableHiresFix:                    parseBool(sdConfig["ENABLE_HIRES_FIX"], false),
+		HrScale:                           parseFloat(sdConfig["HR_SCALE"], 2.0),
+		HrUpscaler:                        sdConfig["HR_UPSCALER"],
+		HrResizeX:                         parseInt(sdConfig["HR_RESIZE_X"], 0),
+		HrResizeY:                         parseInt(sdConfig["HR_RESIZE_Y"], 0),
+		HrSecondPassSteps:                 parseInt(sdConfig["HR_SECOND_PASS_STEPS"], 0),
 		NegativePrompt:                    negativePrompt,
 		Steps:                             parseInt(sdConfig["STEPS"], 20),
 		CfgScale:                          parseFloat(sdConfig["CFG_SCALE"], 7.0),
@@ -139,6 +151,24 @@ func SaveSDConfig(cfg *SDConfig) error {
 	}
 	if cfg.Lora != "" {
 		lines = append(lines, fmt.Sprintf("LORA=%s", cfg.Lora))
+	}
+	if cfg.EnableHiresFix {
+		lines = append(lines, fmt.Sprintf("ENABLE_HIRES_FIX=%t", cfg.EnableHiresFix))
+	}
+	if cfg.HrScale != 0 {
+		lines = append(lines, fmt.Sprintf("HR_SCALE=%.2f", cfg.HrScale))
+	}
+	if cfg.HrUpscaler != "" {
+		lines = append(lines, fmt.Sprintf("HR_UPSCALER=%s", cfg.HrUpscaler))
+	}
+	if cfg.HrResizeX != 0 {
+		lines = append(lines, fmt.Sprintf("HR_RESIZE_X=%d", cfg.HrResizeX))
+	}
+	if cfg.HrResizeY != 0 {
+		lines = append(lines, fmt.Sprintf("HR_RESIZE_Y=%d", cfg.HrResizeY))
+	}
+	if cfg.HrSecondPassSteps != 0 {
+		lines = append(lines, fmt.Sprintf("HR_SECOND_PASS_STEPS=%d", cfg.HrSecondPassSteps))
 	}
 	// NegativePromptは別ファイルなので保存しない
 	if cfg.Steps != 0 {

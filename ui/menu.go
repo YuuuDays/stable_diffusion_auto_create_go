@@ -34,8 +34,17 @@ func Run(ctx context.Context, characters []common.PromptItem, situations []situa
 }
 
 // runGenerationMode は生成モードを実行
+func askUseHiresFix() bool {
+	fmt.Print("Hires.fix を使いますか？ (1=はい 0=いいえ) >> ")
+	return ReadInt() == 1
+}
+
 func runGenerationMode(ctx context.Context, characters []common.PromptItem, situations []situation.SituationCategory, cfg *config.SDConfig) {
 	fmt.Println("\n🎲 生成モード")
+
+	// Hires.fixを使うか聞く
+	useHires := askUseHiresFix()
+	cfg.EnableHiresFix = useHires
 
 	// キャラクター選択
 	selectedChar := selectCharacter(characters)

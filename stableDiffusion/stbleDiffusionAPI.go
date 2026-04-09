@@ -17,10 +17,15 @@ import (
 
 type SDResponse struct {
 	Images []string `json:"images"`
+	Info   string   `json:"info"`
 }
 
 type SDOptions struct {
 	SDModelCheckpoint string `json:"sd_model_checkpoint"`
+}
+
+type SDResultInfo struct {
+	Seed int64 `json:"seed"`
 }
 
 // GetCurrentModel はSD WebUIの現在のモデルを取得
@@ -70,13 +75,13 @@ func GetEffectiveLora(cfg *config.SDConfig) (string, error) {
 }
 
 // GenerateImage は指定されたプロンプトで画像を生成し、指定ディレクトリに保存
-func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, outputDir, fileName string) error {
+func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, outputDir, baseName string, seed int64) (int64, error) {
 	// モデル取得（設定されていない場合、現在のモデルを使用）
 	model := cfg.Model
 	if model == "" {
 		currentModel, err := GetCurrentModel(cfg.APIURL)
 		if err != nil {
-			return fmt.Errorf("現在のモデル取得エラー: %v", err)
+			return 0, fmt.Errorf("現在のモデル取得エラー: %v", err)
 		}
 		model = currentModel
 		// 表示はrunGenerationで行う
@@ -91,7 +96,30 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 		"width":           cfg.Width,
 		"height":          cfg.Height,
 		"sampler_name":    cfg.SamplerName,
-		"seed":            cfg.Seed,
+		"seed":            seed,
+	}
+
+	// モデル指定
+	payload["model"] = model
+
+	// Hires.fix 設定
+	if cfg.EnableHiresFix {
+		payload["enable_hr"] = true
+		if cfg.HrScale != 0 {
+			payload["hr_scale"] = cfg.HrScale
+		}
+		if cfg.HrUpscaler != "" {
+			payload["hr_upscaler"] = cfg.HrUpscaler
+		}
+		if cfg.HrResizeX != 0 {
+			payload["hr_resize_x"] = cfg.HrResizeX
+		}
+		if cfg.HrResizeY != 0 {
+			payload["hr_resize_y"] = cfg.HrResizeY
+		}
+		if cfg.HrSecondPassSteps != 0 {
+			payload["hr_second_pass_steps"] = cfg.HrSecondPassSteps
+		}
 	}
 
 	// モデル指定
@@ -136,6 +164,8 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 	}
 	if cfg.DenoisingStrength != 0 {
 		payload["denoising_strength"] = cfg.DenoisingStrength
+	} else if cfg.EnableHiresFix {
+		payload["denoising_strength"] = 0.5 // Hires.fix有効時のデフォルト値
 	}
 	if cfg.SMinUncond != 0 {
 		payload["s_min_uncond"] = cfg.SMinUncond
@@ -206,11 +236,9 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 	if cfg.ScriptArgs != nil {
 		payload["script_args"] = cfg.ScriptArgs
 	}
-	if cfg.SendImages {
-		payload["send_images"] = cfg.SendImages
-	}
+	payload["send_images"] = true // 常に画像データをレスポンスに含める
 	if cfg.SaveImages {
-		payload["save_images"] = cfg.SaveImages
+		payload["save_images"] = false // プログラム側で保存するため、SD側は保存しない
 	}
 	if cfg.AlwaysonScripts != nil {
 		payload["alwayson_scripts"] = cfg.AlwaysonScripts
@@ -218,7 +246,7 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("ペイロード作成エラー: %v", err)
+		return 0, fmt.Errorf("ペイロード作成エラー: %v", err)
 	}
 
 	// HTTPリクエスト作成
@@ -229,7 +257,7 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 		bytes.NewBuffer(jsonData),
 	)
 	if err != nil {
-		return fmt.Errorf("リクエスト作成エラー: %v", err)
+		return 0, fmt.Errorf("リクエスト作成エラー: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -237,40 +265,71 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
-			return fmt.Errorf("リクエストキャンセル")
+			return 0, fmt.Errorf("リクエストキャンセル")
 		}
-		return fmt.Errorf("APIリクエストエラー: %v", err)
+		return 0, fmt.Errorf("APIリクエストエラー: %v", err)
 	}
 	defer resp.Body.Close()
 
 	// レスポンス読み込み
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("レスポンス読み込みエラー: %v", err)
+		return 0, fmt.Errorf("レスポンス読み込みエラー: %v", err)
 	}
 
 	var result SDResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return fmt.Errorf("JSONパースエラー: %v", err)
+		return 0, fmt.Errorf("JSONパースエラー: %v", err)
 	}
 
 	if len(result.Images) == 0 {
-		return fmt.Errorf("画像データが返されませんでした")
+		return 0, fmt.Errorf("画像データが返されませんでした（send_imagesが無効な可能性）")
 	}
 
-	// Base64デコード
+	if result.Images[0] == "" {
+		return 0, fmt.Errorf("画像データが空です（SDのレスポンスにimagesデータがありません）")
+	}
+
+	// 常にInfoからactualSeedを取得する（指定seedに関わらず）
+	actualSeed := seed
+	if result.Info != "" {
+		var info SDResultInfo
+		if err := json.Unmarshal([]byte(result.Info), &info); err == nil && info.Seed > 0 {
+			actualSeed = info.Seed
+		} else if err != nil {
+			fmt.Printf("⚠️ Info JSONパースエラー: %v\n", err)
+		}
+	} else {
+		fmt.Println("⚠️ Infoフィールドが空です")
+	}
+
+	if actualSeed <= 0 {
+		actualSeed = seed
+	}
+
+	fileName := fmt.Sprintf("%s_seed_%d.png", baseName, actualSeed)
+
+	// Base64デコード（標準およびURLセーフbase64に対応）
 	imageBytes, err := base64.StdEncoding.DecodeString(result.Images[0])
 	if err != nil {
-		return fmt.Errorf("Base64デコードエラー: %v", err)
+		// URLセーフbase64でリトライ
+		imageBytes, err = base64.URLEncoding.DecodeString(result.Images[0])
+		if err != nil {
+			return 0, fmt.Errorf("Base64デコードエラー: %v", err)
+		}
+	}
+
+	if len(imageBytes) == 0 {
+		return 0, fmt.Errorf("デコード後の画像データが0バイトです")
 	}
 
 	// 保存
 	fullPath := filepath.Join(outputDir, fileName)
 	err = os.WriteFile(fullPath, imageBytes, 0644)
 	if err != nil {
-		return fmt.Errorf("ファイル保存エラー: %v", err)
+		return 0, fmt.Errorf("ファイル保存エラー: %v", err)
 	}
 
-	return nil
+	return actualSeed, nil
 }

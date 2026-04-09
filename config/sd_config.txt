@@ -4,6 +4,18 @@ API_URL=http://127.0.0.1:7860
 MODEL=
 # LoRA (例: <lora:name:1.0>)
 LORA=
+# Hires.fix を使うか
+ENABLE_HIRES_FIX=false
+# Hires.fix のスケール
+HR_SCALE=2.0
+# Hires.fix のアップスケーラ名
+HR_UPSCALER=
+# Hires.fix でリサイズする幅
+HR_RESIZE_X=
+# Hires.fix でリサイズする高さ
+HR_RESIZE_Y=
+# Hires.fix の2回目パスステップ数
+HR_SECOND_PASS_STEPS=
 # 生成ステップ数 (1-150)
 STEPS=20
 # CFGスケール (1-30)
