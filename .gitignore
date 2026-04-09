@@ -49,5 +49,3 @@ Thumbs.db
 *.tmp
 *.temp
 
-*.txt
-!config/sd_config.txt

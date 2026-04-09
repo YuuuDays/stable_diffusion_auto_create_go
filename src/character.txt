@@ -1,0 +1,4 @@
+[
+  { "en": "fischl (genshin_impact)", "ja": "フィッシュル" },
+  { "en": "<lora:curearcanashadow_v1.0_IL:1>Ruruka Moria,blonde hair,red eyes,purple eyes,ahoge,multicolored hair,black dress,black footwear,black thighhighs,hair ornament,artist:rella,age 13,", "ja": "キュアアルカナ・シャドウ" }
+]
