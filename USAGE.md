@@ -73,17 +73,27 @@ situation/
 [{"en": "school uniform, classroom, daytime", "ja": "制服・教室・昼間"}]
 ```
 
-### 3. 設定ファイル (`.env`)
-生成パラメータを調整：
+### 3. 設定ファイル
+
+#### 環境設定 (`.env`)
+API接続先などの環境依存設定：
 ```env
+API_URL=http://127.0.0.1:7860
+```
+
+#### SD生成パラメータ (`config/sd_config.txt`)
+画像生成のパラメータを調整：
+```txt
 NEGATIVE_PROMPT=score_6, score_5, score_4, source_anime, source_cartoon, watermark, text, signature, blurry, lowres, bad anatomy, bad hands, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, artist name
 STEPS=20
-CFG_SCALE=7
+CFG_SCALE=7.0
 WIDTH=768
 HEIGHT=1024
 SAMPLER_NAME=DPM++ 2M Karras
 SEED=-1
 ```
+
+**注意**: `.env`ファイルは共有しない設定（API URLなど）を入れ、SDパラメータは`config/sd_config.txt`に保存されます。これにより、SD設定をユーザーが簡単に編集できるようになっています。
 
 ## 使い方
 
@@ -96,6 +106,9 @@ SEED=-1
 # 直接実行の場合
 go run .
 ```
+###ネガティブプロンプトについて
+`config/sd_config.txt`に設定をおいてください。
+
 
 ### 操作フロー
 
@@ -125,7 +138,7 @@ go run .
 4. **設定モードの場合**
    - 現在のSDパラメータを表示
    - 変更したい項目を選択して新しい値を入力
-   - `.env`ファイルに保存
+   - `config/sd_config.txt`ファイルに保存
 
 ### サンプル実行例
 
@@ -210,7 +223,7 @@ go run .
 
 ### 画像が生成されない
 - SD WebUIのモデルが読み込まれているか確認
-- `.env` のパラメータが適切か確認
+- `config/sd_config.txt` のパラメータが適切か確認
 - プロンプトの内容を確認
 
 ### ビルドエラー
