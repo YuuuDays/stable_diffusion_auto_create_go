@@ -91,10 +91,10 @@ func selectSituationAndSettings(categories []situation.SituationCategory) (*situ
 		}
 		settings.SituationSeeds[sit.FileName] = seed
 
-		fmt.Printf("  %s の回数 >> ", sit.Name)
+		fmt.Printf("  %s の回数 (0=スキップ) >> ", sit.Name)
 		count := ReadInt()
-		if count < 1 {
-			count = 1
+		if count < 0 {
+			count = 0
 		}
 		settings.SituationRepeats[sit.FileName] = count
 	}
@@ -122,7 +122,9 @@ func confirmGeneration(char *common.PromptItem, category *situation.SituationCat
 		seed := settings.SituationSeeds[sit.FileName]
 		images := repeats * settings.CategoryRepeats
 		totalImages += images
-		if seed >= 0 {
+		if repeats == 0 {
+			fmt.Printf("  %s: スキップ\n", sit.Name)
+		} else if seed >= 0 {
 			fmt.Printf("  %s: %d枚 (seed=%d)\n", sit.Name, images, seed)
 		} else {
 			fmt.Printf("  %s: %d枚\n", sit.Name, images)
