@@ -41,7 +41,7 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
-		"http://127.0.0.1:7860/sdapi/v1/txt2img",
+		cfg.APIURL+"/sdapi/v1/txt2img",
 		bytes.NewBuffer(jsonData),
 	)
 	if err != nil {

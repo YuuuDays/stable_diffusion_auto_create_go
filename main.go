@@ -16,9 +16,9 @@ import (
 )
 
 // SD API接続確認
-func checkSDConnection() error {
+func checkSDConnection(cfg *config.SDConfig) error {
 	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Get("http://127.0.0.1:7860/sdapi/v1/sd-models")
+	resp, err := client.Get(cfg.APIURL + "/sdapi/v1/sd-models")
 	if err != nil {
 		return fmt.Errorf("SD WebUI APIに接続できません。SD WebUIをAPIモードで起動してください: %v", err)
 	}
@@ -31,8 +31,15 @@ func checkSDConnection() error {
 }
 
 func main() {
+	// 設定読み込み
+	cfg, err := config.LoadSDConfig()
+	if err != nil {
+		fmt.Println("❌ 設定読み込みエラー:", err)
+		os.Exit(1)
+	}
+
 	// SD接続確認
-	if err := checkSDConnection(); err != nil {
+	if err := checkSDConnection(cfg); err != nil {
 		fmt.Println("❌", err)
 		os.Exit(1)
 	}
@@ -49,15 +56,8 @@ func main() {
 		fmt.Println("\n🛑 Ctrl+C 検知 生成停止します...")
 		cancel()
 		// SD側も強制停止
-		http.Post("http://127.0.0.1:7860/sdapi/v1/interrupt", "application/json", nil)
+		http.Post(cfg.APIURL+"/sdapi/v1/interrupt", "application/json", nil)
 	}()
-
-	// 設定読み込み
-	cfg, err := config.LoadSDConfig()
-	if err != nil {
-		fmt.Println("❌ 設定読み込みエラー:", err)
-		os.Exit(1)
-	}
 
 	// キャラクター読み込み
 	characters, err := prompt.LoadCharacters("src/character.txt")
