@@ -1,0 +1,92 @@
+# ネガティブプロンプト
+NEGATIVE_PROMPT=score_6, score_5, score_4, source_anime, source_cartoon, watermark, text, signature, blurry, lowres, bad anatomy, bad hands, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, artist name
+# 生成ステップ数 (1-150)
+STEPS=20
+# CFGスケール (1-30)
+CFG_SCALE=7.0
+# 画像幅 (64-2048)
+WIDTH=768
+# 画像高さ (64-2048)
+HEIGHT=1024
+# サンプラー名
+SAMPLER_NAME=DPM++ 2M Karras
+# シード値 (-1でランダム)
+SEED=-1
+# スタイル (配列、未使用)
+STYLES=
+# サブシード
+SUBSEED=
+# サブシード強度
+SUBSEED_STRENGTH=
+# シードリサイズ元高さ
+SEED_RESIZE_FROM_H=
+# シードリサイズ元幅
+SEED_RESIZE_FROM_W=
+# バッチサイズ
+BATCH_SIZE=
+# イテレーション数
+N_ITER=
+# 顔復元
+RESTORE_FACES=
+# タイリング
+TILING=
+# サンプル保存しない
+DO_NOT_SAVE_SAMPLES=
+# グリッド保存しない
+DO_NOT_SAVE_GRID=
+# ETA
+ETA=
+# デノイズ強度
+DENOISING_STRENGTH=
+# S最小無条件
+S_MIN_UNCOND=
+# Sチャーン
+S_CHURN=
+# S T最大
+S_TMAX=
+# S T最小
+S_TMIN=
+# Sノイズ
+S_NOISE=
+# オーバーライド設定
+OVERRIDE_SETTINGS=
+# オーバーライド設定復元
+OVERRIDE_SETTINGS_RESTORE_AFTERWARDS=
+# リファイナーチェックポイント
+REFINER_CHECKPOINT=
+# リファイナースイッチ位置
+REFINER_SWITCH_AT=
+# エクストラネットワーク無効
+DISABLE_EXTRA_NETWORKS=
+# リサイズモード
+RESIZE_MODE=
+# 画像CFGスケール
+IMAGE_CFG_SCALE=
+# マスクブラー
+MASK_BLUR=
+# インペインティングフィル
+INPAINTING_FILL=
+# フル解像度インペインティング
+INPAINT_FULL_RES=
+# フル解像度インペインティングパディング
+INPAINT_FULL_RES_PADDING=
+# インペインティングマスク反転
+INPAINTING_MASK_INVERT=
+# 初期ノイズ乗数
+INITIAL_NOISE_MULTIPLIER=
+# 強制タスクID
+FORCE_TASK_ID=
+# サンプラーインデックス (非推奨)
+SAMPLER_INDEX=
+# 初期画像を含む
+INCLUDE_INIT_IMAGES=
+# スクリプト名
+SCRIPT_NAME=
+# スクリプト引数
+SCRIPT_ARGS=
+# 画像送信
+SEND_IMAGES=
+# 画像保存
+SAVE_IMAGES=
+# 常時オンスクリプト
+ALWAYSON_SCRIPTS=
