@@ -17,7 +17,7 @@
 1. **リポジトリのクローンまたはダウンロード**
    ```
    # このフォルダをそのまま使用
-   cd C:\Users\ponpo\Desktop\★★自作プログラム案等\stible_diffsion_new_go
+   cd C:\Users\(省略)\stible_diffsion_new_go
    ```
 
 2. **依存関係のインストール**
@@ -58,8 +58,9 @@ JSON配列形式でキャラクターを定義：
 #### シチュエーション定義 (`situation/` フォルダ)
 各カテゴリフォルダ内にシチュエーションファイルを作成：
 ```
+## 重要！situationのtxtファイルは先頭に{'数字'_'シチュエーション名'.txt}になるようにお願いします
 situation/
-├── school/
+├── school/(個々のフォルダ名はなんでもよい)
 │   ├── 01_classroom.txt
 │   └── 02_playground.txt
 └── home/
