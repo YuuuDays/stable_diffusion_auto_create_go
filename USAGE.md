@@ -1,249 +1,45 @@
 # SD Auto Generation Tool - 使い方ガイド
 
-## 概要
-
-このツールは、Stable Diffusion WebUIのAPIを利用して、キャラクターとシチュエーションの組み合わせで自動的に画像を生成するGoプログラムです。コマンドラインインターフェースで操作し、生成条件を設定してバッチ生成が可能です。
-
-## 必要条件
-
-- **Go 1.23.0以上**
-- **Stable Diffusion WebUI**
-  - APIモードで起動可能
-  - デフォルトURL: `http://127.0.0.1:7860`
-- **Windows/Linux/macOS** (Goが対応するOS)
-
-## インストール
-
-1. **リポジトリのクローンまたはダウンロード**
-   ```
-   # このフォルダをそのまま使用
-   cd C:\Users\(省略)\stible_diffsion_new_go
-   ```
-
-2. **依存関係のインストール**
-   ```bash
-   go mod tidy
-   ```
-
-3. **ビルド**
-   ```bash
-   go build -o sd-auto-new.exe
-   ```
+Stable Diffusion WebUIのAPIを利用して、キャラクターとシチュエーションの組み合わせで自動的に画像を生成するツールです。
 
 ## セットアップ
 
-### 1. Stable Diffusion WebUIの準備
-
-1. Stable Diffusion WebUIをインストール
-2. `--api` オプション付きで起動
-   ```bash
-   # WebUIのフォルダで
-   webui-user.bat --api
-   # または
-   python launch.py --api
-   ```
-3. WebUIが `http://127.0.0.1:7860` で起動していることを確認
-
-### 2. データファイルの準備
-
-#### キャラクター定義 (`src/character.txt`)
-JSON配列形式でキャラクターを定義：
-```json
-[
-  { "en": "fischl (genshin_impact)", "ja": "フィッシュル" },
-  { "en": "<lora:curearcanashadow_v1.0_IL:1>Ruruka Moria,blonde hair,red eyes,purple eyes,ahoge,multicolored hair,black dress,black footwear,black thighhighs,hair ornament,artist:rella,age 13,", "ja": "キュアアルカナ・シャドウ" }
-]
-```
-
-#### シチュエーション定義 (`situation/` フォルダ)
-各カテゴリフォルダ内にシチュエーションファイルを作成：
-```
-## 重要！situationのtxtファイルは先頭に{'数字'_'シチュエーション名'.txt}になるようにお願いします
-situation/
-├── school/(個々のフォルダ名はなんでもよい)
-│   ├── 01_classroom.txt
-│   └── 02_playground.txt
-└── home/
-    ├── 01_livingroom.txt
-    └── 02_bedroom.txt
-```
-
-各シチュエーションファイルの内容例 (`01_classroom.txt`)：
-```json
-[{"en": "school uniform, classroom, daytime", "ja": "制服・教室・昼間"}]
-```
-
-### 3. 設定ファイル
-
-#### 環境設定 (`.env`)
-API接続先などの環境依存設定：
-```env
-API_URL=http://127.0.0.1:7860
-```
-
-#### SD生成パラメータ (`config/sd_config.txt`)
-画像生成のパラメータを調整：
-```txt
-NEGATIVE_PROMPT=score_6, score_5, score_4, source_anime, source_cartoon, watermark, text, signature, blurry, lowres, bad anatomy, bad hands, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, artist name
-STEPS=20
-CFG_SCALE=7.0
-WIDTH=768
-HEIGHT=1024
-SAMPLER_NAME=DPM++ 2M Karras
-SEED=-1
-```
-
-**注意**: `.env`ファイルは共有しない設定（API URLなど）を入れ、SDパラメータは`config/sd_config.txt`に保存されます。これにより、SD設定をユーザーが簡単に編集できるようになっています。
+1. **Go 1.23.0以上** をインストール
+2. **Stable Diffusion WebUI** をインストールし、`--api` オプション付きで起動
+3. リポジトリをクローン: `git clone https://github.com/YuuuDays/stable_diffusion_auto_create_go.git`
+4. 依存関係インストール: `go mod tidy`
+5. ビルド: `go build -o sd-auto-new.exe`
 
 ## 使い方
 
-### プログラムの起動
+1. `./sd-auto-new.exe` を実行
+2. SD WebUI API接続を確認
+3. メニューから「1. 生成モード」を選択
+4. キャラクターを選択（番号入力、-1でランダム）
+5. シチュエーションカテゴリを選択
+6. 各シチュエーションの繰り返し回数を設定
+7. カテゴリ全体の繰り返し回数を設定
+8. 生成条件を確認して実行
+9. Ctrl+Cで中断可能
 
-```bash
-# ビルド済みの場合
-./sd-auto-new.exe
+## データファイル
 
-# 直接実行の場合
-go run .
-```
-###ネガティブプロンプトについて
-`config/sd_config.txt`に設定をおいてください。
+### ネガティブプロンプト
+`config/sd_config.txt` に設定。デフォルトでscore_6などの品質向上プロンプトが入っています。
 
+### シチュエーション
+`situations/` フォルダにカテゴリごとのフォルダを作成し、その中にシチュエーションファイルを置く。
 
-### 操作フロー
+#### ファイル命名規則
+- ファイル名: `{数字}_{シチュエーション名}.txt` （例: `01_classroom.txt`）
+- 内容: JSON配列 `[{"en": "プロンプト", "ja": "日本語名"}]`
 
-1. **SD接続確認**
-   - プログラム起動時に自動でSD WebUI APIに接続確認
-   - 接続できない場合はエラーメッセージが表示され終了
+### キャラクター
+`src/character.txt` にJSON配列で定義。
 
-2. **モード選択**
-   ```
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   🎨 SD Auto Generation Tool
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   1. 生成モード
-   0. 終了
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   選択 >>
-   ```
+## 注意点
 
-3. **生成モードの場合**
-   - **キャラクター選択**: 番号入力で選択（-1でランダム）
-   - **シチュエーションカテゴリ選択**: フォルダ一覧から選択
-   - **繰り返し回数設定**: 各シチュエーションの回数 + カテゴリ全体の回数
-   - **条件確認**: 生成枚数などを確認
-   - **生成実行**: 進捗表示しながら画像生成
-
-### サンプル実行例
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎨 SD Auto Generation Tool
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. 生成モード
-0. 終了
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-選択 >> 1
-
-👤 キャラクター選択
-
-📋 キャラクター一覧:
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-  0. フィッシュル
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-キャラクター番号を選択 (-1でランダム) >> 0
-✅ 選択: フィッシュル
-
-📁 シチュエーションカテゴリ選択
-
-📋 カテゴリ一覧:
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-  0. category1 (2個のシチュエーション)
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-カテゴリ番号を選択 >> 0
-✅ 選択: category1
-
-各シチュエーションの繰り返し回数を設定:
-  制服・教室・昼間 の回数 >> 2
-  公園・ベンチ・夕方 の回数 >> 1
-
-このカテゴリ全体を何回繰り返しますか？ >> 1
-
-📋 生成条件確認
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-キャラクター: フィッシュル
-カテゴリ: category1
-カテゴリ繰り返し: 1回
-シチュエーション詳細:
-  制服・教室・昼間: 2回 × 1回 = 2枚
-  公園・ベンチ・夕方: 1回 × 1回 = 1枚
-合計生成枚数: 3枚
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-この条件で生成しますか？ (y/n) >> y
-
-📁 出力先: output/2026-04-09
-🎨 合計 3 枚の画像を生成します
-
-🔄 カテゴリ 1/1 回目
-📸 生成中 1/3 - キャラ:フィッシュル, シチュ:制服・教室・昼間
-📸 生成中 2/3 - キャラ:フィッシュル, シチュ:制服・教室・昼間
-📸 生成中 3/3 - キャラ:フィッシュル, シチュ:公園・ベンチ・夕方
-
-✅ すべての生成が完了しました！
-```
-
-## 出力ファイル
-
-生成された画像は `output/YYYY-MM-DD/` フォルダに保存されます。
-
-- ファイル名形式: `{キャラ名(ja)}_{シチュ名}_{連番}.png`
-- 例: `フィッシュル_制服・教室・昼間_001.png`
-
-## 中断とキャンセル
-
-- **Ctrl+C** で生成を中断可能
-- 中断時は現在の生成をキャンセルし、SD APIにも停止リクエストを送信
-
-## トラブルシューティング
-
-### SD WebUIに接続できない
-- SD WebUIが `--api` オプション付きで起動しているか確認
-- URLが `http://127.0.0.1:7860` であるか確認
-- ファイアウォールやポート競合がないかチェック
-
-### 画像が生成されない
-- SD WebUIのモデルが読み込まれているか確認
-- `config/sd_config.txt` のパラメータが適切か確認
-- プロンプトの内容を確認
-
-### ビルドエラー
-- Goのバージョンが1.23.0以上か確認
-- `go mod tidy` を実行して依存関係を更新
-
-### データファイルのエラー
-- JSON形式が正しいか確認（JSONLintなどで検証）
-- ファイルパスが正しいか確認
-- 文字コードがUTF-8か確認
-
-## 拡張・カスタマイズ
-
-### 新しいキャラクターの追加
-`src/character.txt` にJSONオブジェクトを追加：
-```json
-{ "en": "new_character_prompt", "ja": "新しいキャラクター" }
-```
-
-### 新しいシチュエーションの追加
-1. `situation/` 内に新しいフォルダ作成
-2. フォルダ内に `01_situation.txt` などのファイル作成
-3. JSON形式でプロンプト定義
-
-### パラメータの調整
-`config/sd_config.txt` を直接編集してください。各パラメータの上に日本語の説明があります。
-
-## サポート
-
-バグ報告や機能リクエストは、プログラムのコメントやrequirements.mdを参照してください。
+- `.env` はAPI URLなどの環境設定
+- `config/sd_config.txt` はSDパラメータ（Git追跡対象）
+- 生成画像は `output/YYYY-MM-DD/` に保存
+- エラー時はSD WebUIが起動しているか確認

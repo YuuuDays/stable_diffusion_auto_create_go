@@ -22,12 +22,10 @@ func selectCharacter(characters []common.PromptItem) *common.PromptItem {
 		return nil
 	}
 
-	fmt.Println("\n📋 キャラクター一覧:")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println("\nキャラクター一覧:")
 	for i, char := range characters {
-		fmt.Printf("  %2d. %s\n", i, char.Ja)
+		fmt.Printf("  %d. %s\n", i, char.Ja)
 	}
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	fmt.Print("\nキャラクター番号を選択 (-1でランダム) >> ")
 	idx := ReadInt()
@@ -57,12 +55,10 @@ func selectSituationAndSettings(categories []situation.SituationCategory) (*situ
 		return nil, nil
 	}
 
-	fmt.Println("\n📋 カテゴリ一覧:")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println("\nカテゴリ一覧:")
 	for i, cat := range categories {
-		fmt.Printf("  %2d. %s (%d個のシチュエーション)\n", i, cat.Name, len(cat.Situations))
+		fmt.Printf("  %d. %s (%d個のシチュエーション)\n", i, cat.Name, len(cat.Situations))
 	}
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	fmt.Print("\nカテゴリ番号を選択 >> ")
 	catIdx := ReadInt()
@@ -102,8 +98,7 @@ func selectSituationAndSettings(categories []situation.SituationCategory) (*situ
 
 // confirmGeneration は生成条件を確認
 func confirmGeneration(char *common.PromptItem, category *situation.SituationCategory, settings *GenerationSettings) bool {
-	fmt.Println("\n📋 生成条件確認")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println("\n生成条件確認")
 	fmt.Printf("キャラクター: %s\n", char.Ja)
 	fmt.Printf("カテゴリ: %s\n", category.Name)
 	fmt.Printf("カテゴリ繰り返し: %d回\n", settings.CategoryRepeats)
@@ -113,12 +108,11 @@ func confirmGeneration(char *common.PromptItem, category *situation.SituationCat
 		repeats := settings.SituationRepeats[sit.FileName]
 		images := repeats * settings.CategoryRepeats
 		totalImages += images
-		fmt.Printf("  %s: %d回 × %d回 = %d枚\n", sit.Name, repeats, settings.CategoryRepeats, images)
+		fmt.Printf("  %s: %d枚\n", sit.Name, images)
 	}
 	fmt.Printf("合計生成枚数: %d枚\n", totalImages)
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-	fmt.Print("この条件で生成しますか？ (y/n) >> ")
+	fmt.Print("\nこの条件で生成しますか？ (y/n) >> ")
 	answer := ReadString()
-	return answer == "y" || answer == "Y" || answer == "yes"
+	return answer == "y" || answer == "Y"
 }

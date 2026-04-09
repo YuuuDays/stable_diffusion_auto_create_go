@@ -12,12 +12,9 @@ import (
 // Run はメインUIを実行
 func Run(ctx context.Context, characters []common.PromptItem, situations []situation.SituationCategory, cfg *config.SDConfig) {
 	for {
-		fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━")
-		fmt.Println("🎨 SD Auto Generation Tool")
-		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
+		fmt.Println("SD Auto Generation Tool")
 		fmt.Println("1. 生成モード")
 		fmt.Println("0. 終了")
-		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 		fmt.Print("選択 >> ")
 
 		choice := ReadInt()
