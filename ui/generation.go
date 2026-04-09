@@ -24,6 +24,29 @@ func runGeneration(ctx context.Context, char *common.PromptItem, category *situa
 	}
 	fmt.Printf("📁 出力先: %s\n", outputDir)
 
+	// 使用モデル取得と表示
+	model := cfg.Model
+	if model == "" {
+		currentModel, err := stablediffusion.GetCurrentModel(cfg.APIURL)
+		if err != nil {
+			fmt.Printf("⚠️ 現在のモデル取得エラー: %v\n", err)
+		} else {
+			model = currentModel
+			fmt.Printf("📋 使用モデル: %s\n", model)
+		}
+	} else {
+		fmt.Printf("📋 使用モデル: %s\n", model)
+	}
+
+	// 使用LoRA取得と表示
+	lora, err := stablediffusion.GetEffectiveLora(cfg)
+	if err != nil {
+		fmt.Printf("⚠️ LoRA取得エラー: %v\n", err)
+	}
+	if lora != "" {
+		fmt.Printf("🔗 使用LoRA: %s\n", lora)
+	}
+
 	// 総生成数を計算
 	totalImages := 0
 	for _, sit := range category.Situations {

@@ -140,9 +140,7 @@ func SaveSDConfig(cfg *SDConfig) error {
 	if cfg.Lora != "" {
 		lines = append(lines, fmt.Sprintf("LORA=%s", cfg.Lora))
 	}
-	if cfg.NegativePrompt != "" {
-		lines = append(lines, fmt.Sprintf("NEGATIVE_PROMPT=%s", cfg.NegativePrompt))
-	}
+	// NegativePromptは別ファイルなので保存しない
 	if cfg.Steps != 0 {
 		lines = append(lines, fmt.Sprintf("STEPS=%d", cfg.Steps))
 	}
@@ -192,7 +190,7 @@ func loadSDConfigFromFile() (map[string]string, error) {
 
 // loadNegativePromptFromFile はネガティブプロンプトファイルを読み込み、文字列として返す
 func loadNegativePromptFromFile() (string, error) {
-	data, err := os.ReadFile("config/ネガティブプロンプト置き場.txt")
+	data, err := os.ReadFile("config/negativePrompt.txt")
 	if err != nil {
 		return "", err
 	}

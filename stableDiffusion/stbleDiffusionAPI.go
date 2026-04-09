@@ -23,8 +23,8 @@ type SDOptions struct {
 	SDModelCheckpoint string `json:"sd_model_checkpoint"`
 }
 
-// getCurrentModel はSD WebUIの現在のモデルを取得
-func getCurrentModel(apiURL string) (string, error) {
+// GetCurrentModel はSD WebUIの現在のモデルを取得
+func GetCurrentModel(apiURL string) (string, error) {
 	resp, err := http.Get(apiURL + "/sdapi/v1/options")
 	if err != nil {
 		return "", err
@@ -60,7 +60,7 @@ func GetEffectiveLora(cfg *config.SDConfig) (string, error) {
 		lastLora, err := GetLastUsedLora()
 		if err == nil && lastLora != "" {
 			lora = lastLora
-			fmt.Printf("🔗 使用LoRA: %s\n", lora)
+			// 表示はrunGenerationで行う
 		}
 	} else {
 		// LoRAが指定された場合、保存
@@ -74,12 +74,12 @@ func GenerateImage(ctx context.Context, prompt string, cfg *config.SDConfig, out
 	// モデル取得（設定されていない場合、現在のモデルを使用）
 	model := cfg.Model
 	if model == "" {
-		currentModel, err := getCurrentModel(cfg.APIURL)
+		currentModel, err := GetCurrentModel(cfg.APIURL)
 		if err != nil {
 			return fmt.Errorf("現在のモデル取得エラー: %v", err)
 		}
 		model = currentModel
-		fmt.Printf("📋 使用モデル: %s\n", model)
+		// 表示はrunGenerationで行う
 	}
 
 	// ペイロード作成
