@@ -50,3 +50,4 @@ Thumbs.db
 *.temp
 
 *.txt
+!config/sd_config.txt
