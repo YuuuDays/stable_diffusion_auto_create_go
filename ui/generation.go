@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"sd-auto-new/common"
 	"sd-auto-new/config"
@@ -13,6 +14,8 @@ import (
 
 // runGeneration は画像生成を実行
 func runGeneration(ctx context.Context, char *common.PromptItem, category *situation.SituationCategory, settings *GenerationSettings, cfg *config.SDConfig) {
+	start := time.Now()
+
 	// 出力ディレクトリ作成
 	outputDir, err := utils.CreateOutputDir("output")
 	if err != nil {
@@ -69,4 +72,6 @@ func runGeneration(ctx context.Context, char *common.PromptItem, category *situa
 	}
 
 	fmt.Println("\n✅ すべての生成が完了しました！")
+	elapsed := time.Since(start)
+	fmt.Printf("⏱️ 所要時間: %.2f秒\n", elapsed.Seconds())
 }

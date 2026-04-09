@@ -19,6 +19,8 @@ func Run(ctx context.Context, characters []common.PromptItem, situations []situa
 
 		choice := ReadInt()
 
+		fmt.Println("──")
+
 		switch choice {
 		case 1:
 			runGenerationMode(ctx, characters, situations, cfg)
