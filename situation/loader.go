@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"sd-auto-new/common"
 )
@@ -78,7 +79,7 @@ func loadSituationsFromCategory(categoryPath string) ([]Situation, error) {
 		}
 
 		fileName := filepath.Base(file)
-		name := prompts[0].Ja // 最初のプロンプトの日本語名を使用
+		name := strings.TrimSuffix(fileName, ".txt") // 拡張子を除いたファイル名を使用
 
 		situations = append(situations, Situation{
 			FileName: fileName,

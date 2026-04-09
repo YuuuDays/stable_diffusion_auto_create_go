@@ -89,17 +89,37 @@ func runSettingsMode(cfg *config.SDConfig) {
 			fmt.Print("新しいNegative Prompt >> ")
 			cfg.NegativePrompt = ReadString()
 		case 2:
-			fmt.Print("新しいSteps >> ")
-			cfg.Steps = ReadInt()
+			fmt.Print("新しいSteps (1-100) >> ")
+			newSteps := ReadInt()
+			if newSteps < 1 || newSteps > 100 {
+				fmt.Println("❌ Stepsは1-100の範囲で入力してください")
+				continue
+			}
+			cfg.Steps = newSteps
 		case 3:
-			fmt.Print("新しいCFG Scale >> ")
-			cfg.CfgScale = ReadFloat()
+			fmt.Print("新しいCFG Scale (1.0-20.0) >> ")
+			newCfg := ReadFloat()
+			if newCfg < 1.0 || newCfg > 20.0 {
+				fmt.Println("❌ CFG Scaleは1.0-20.0の範囲で入力してください")
+				continue
+			}
+			cfg.CfgScale = newCfg
 		case 4:
-			fmt.Print("新しいWidth >> ")
-			cfg.Width = ReadInt()
+			fmt.Print("新しいWidth (64-2048, 64の倍数) >> ")
+			newWidth := ReadInt()
+			if newWidth < 64 || newWidth > 2048 || newWidth%64 != 0 {
+				fmt.Println("❌ Widthは64-2048の範囲で64の倍数で入力してください")
+				continue
+			}
+			cfg.Width = newWidth
 		case 5:
-			fmt.Print("新しいHeight >> ")
-			cfg.Height = ReadInt()
+			fmt.Print("新しいHeight (64-2048, 64の倍数) >> ")
+			newHeight := ReadInt()
+			if newHeight < 64 || newHeight > 2048 || newHeight%64 != 0 {
+				fmt.Println("❌ Heightは64-2048の範囲で64の倍数で入力してください")
+				continue
+			}
+			cfg.Height = newHeight
 		case 6:
 			fmt.Print("新しいSampler Name >> ")
 			cfg.SamplerName = ReadString()
