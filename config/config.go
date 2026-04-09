@@ -6,8 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 // SDConfig はSD生成パラメータを管理
@@ -61,14 +59,8 @@ type SDConfig struct {
 	AlwaysonScripts                   map[string]interface{}
 }
 
-// LoadSDConfig は.envファイルからAPI_URLを読み込み、sd_config.txtからSD設定を読み込む
+// LoadSDConfig はsd_config.txtから全ての設定を読み込む
 func LoadSDConfig() (*SDConfig, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, err
-	}
-
-	apiURL := getEnv("API_URL", "http://127.0.0.1:7860")
-
 	// sd_config.txtから設定を読み込み
 	sdConfig, err := loadSDConfigFromFile()
 	if err != nil {
@@ -76,7 +68,7 @@ func LoadSDConfig() (*SDConfig, error) {
 	}
 
 	cfg := &SDConfig{
-		APIURL:                            apiURL,
+		APIURL:                            sdConfig["API_URL"],
 		NegativePrompt:                    sdConfig["NEGATIVE_PROMPT"],
 		Steps:                             parseInt(sdConfig["STEPS"], 20),
 		CfgScale:                          parseFloat(sdConfig["CFG_SCALE"], 7.0),
@@ -239,22 +231,6 @@ func parseObject(s string) map[string]interface{} {
 		return obj
 	}
 	return nil
-}
-
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
-}
-
-func getEnvInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intValue, err := strconv.Atoi(value); err == nil {
-			return intValue
-		}
-	}
-	return defaultValue
 }
 
 func getEnvFloat(key string, defaultValue float64) float64 {
