@@ -16,7 +16,7 @@ type GenerationSettings struct {
 
 // selectCharacter はキャラクターを選択
 func selectCharacter(characters []common.PromptItem) *common.PromptItem {
-	fmt.Println("\n👤 キャラクター選択")
+	fmt.Println("👤 キャラクター選択")
 
 	if len(characters) == 0 {
 		fmt.Println("❌ キャラクターが読み込まれていません")
@@ -25,7 +25,7 @@ func selectCharacter(characters []common.PromptItem) *common.PromptItem {
 
 	fmt.Println("\nキャラクター一覧:")
 	for i, char := range characters {
-		fmt.Printf("  %d. %s\n", i, char.Ja)
+		fmt.Printf("  %d: %s\n", i, char.Ja)
 	}
 
 	fmt.Print("\nキャラクター番号を選択 (-1でランダム) >> ")
@@ -35,6 +35,7 @@ func selectCharacter(characters []common.PromptItem) *common.PromptItem {
 		// ランダム選択
 		randomIdx := 0 // 簡易的に最初のものを選択（本来はrand使用）
 		fmt.Printf("✅ ランダム選択: %s\n", characters[randomIdx].Ja)
+		fmt.Println(sep)
 		return &characters[randomIdx]
 	}
 
@@ -44,12 +45,13 @@ func selectCharacter(characters []common.PromptItem) *common.PromptItem {
 	}
 
 	fmt.Printf("✅ 選択: %s\n", characters[idx].Ja)
+	fmt.Println(sep)
 	return &characters[idx]
 }
 
 // selectSituationAndSettings はシチュエーションを選択し、設定を入力
 func selectSituationAndSettings(categories []situation.SituationCategory) (*situation.SituationCategory, *GenerationSettings) {
-	fmt.Println("\n📁 シチュエーションカテゴリ選択")
+	fmt.Println("📁 シチュエーションカテゴリ選択")
 
 	if len(categories) == 0 {
 		fmt.Println("❌ シチュエーションが読み込まれていません")
@@ -58,7 +60,7 @@ func selectSituationAndSettings(categories []situation.SituationCategory) (*situ
 
 	fmt.Println("\nカテゴリ一覧:")
 	for i, cat := range categories {
-		fmt.Printf("  %d. %s (%d個のシチュエーション)\n", i, cat.Name, len(cat.Situations))
+		fmt.Printf("  %d: %s (%d個のシチュエーション)\n", i, cat.Name, len(cat.Situations))
 	}
 
 	fmt.Print("\nカテゴリ番号を選択 >> ")
@@ -111,10 +113,10 @@ func selectSituationAndSettings(categories []situation.SituationCategory) (*situ
 
 // confirmGeneration は生成条件を確認
 func confirmGeneration(char *common.PromptItem, category *situation.SituationCategory, settings *GenerationSettings) bool {
-	fmt.Println("\n生成条件確認")
-	fmt.Printf("キャラクター: %s\n", char.Ja)
-	fmt.Printf("カテゴリ: %s\n", category.Name)
-	fmt.Printf("カテゴリ繰り返し: %d回\n", settings.CategoryRepeats)
+	fmt.Println("生成条件確認")
+	fmt.Printf("キャラクター     : %s\n", char.Ja)
+	fmt.Printf("カテゴリ         : %s\n", category.Name)
+	fmt.Printf("カテゴリ繰り返し : %d回\n", settings.CategoryRepeats)
 	fmt.Println("シチュエーション詳細:")
 	totalImages := 0
 	for _, sit := range category.Situations {
@@ -130,7 +132,7 @@ func confirmGeneration(char *common.PromptItem, category *situation.SituationCat
 			fmt.Printf("  %s: %d枚\n", sit.Name, images)
 		}
 	}
-	fmt.Printf("合計生成枚数: %d枚\n", totalImages)
+	fmt.Printf("合計生成枚数     : %d枚\n", totalImages)
 
 	fmt.Print("\nこの条件で生成しますか？ (1=はい 0=いいえ) >> ")
 	answer := ReadString()
